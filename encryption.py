@@ -1,25 +1,20 @@
 from Crypto.Cipher import AES
-from Crypto.Util.Padding import pad, unpad
-from Crypto.Random import get_random_bytes
+import base64
+import os
 
-# Use the same key for encryption and decryption
-key = b'sixteen byte key'
+# Generate a random key for AES encryption
+key = os.urandom(16)
 
 def encrypt_message(message):
-    cipher = AES.new(key, AES.MODE_EAX)  # Initialize the cipher for encryption
+    cipher = AES.new(key, AES.MODE_EAX)
     nonce = cipher.nonce
-    encrypted, tag = cipher.encrypt_and_digest(message.encode())
-    return nonce + encrypted  # Return both nonce and encrypted data
+    ciphertext, tag = cipher.encrypt_and_digest(message.encode())
+    return base64.b64encode(nonce + ciphertext).decode()
 
 def decrypt_message(encrypted_message):
-    nonce = encrypted_message[:16]  # Extract the nonce from the encrypted message
-    cipher = AES.new(key, AES.MODE_EAX, nonce=nonce)  # Initialize cipher with nonce
-    decrypted = cipher.decrypt(encrypted_message[16:])  # Decrypt the message
-    try:
-        return decrypted.decode()  # Return the decoded (original) message
-    except Exception as e:
-        print(f"Decryption failed: {e}")
-        return None
-
-
+    encrypted_message = base64.b64decode(encrypted_message)
+    nonce = encrypted_message[:16]
+    ciphertext = encrypted_message[16:]
+    cipher = AES.new(key, AES.MODE_EAX, nonce=nonce)
+    return cipher.decrypt(ciphertext).decode()
 
