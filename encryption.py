@@ -17,4 +17,3 @@ def decrypt_message(encrypted_message):
     ciphertext = encrypted_message[16:]
     cipher = AES.new(key, AES.MODE_EAX, nonce=nonce)
     return cipher.decrypt(ciphertext).decode()
-
